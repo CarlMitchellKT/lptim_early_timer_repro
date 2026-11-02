@@ -1,0 +1,35 @@
+/*
+ * NUCLEO-F413ZH: Zephyr has no LPTIM node for STM32F4, so define LPTIM1 here
+ * and use it as the tickless system timer, clocked from LSI (32 kHz).
+ *
+ * LPTIM1 on F413: base 0x40002400 (APB1), RCC_APB1ENR.LPTIM1EN = bit 9,
+ * IRQ 97, clock source in RCC_DCKCFGR2 (offset 0x94) bits [31:30]:
+ * 00 APB1, 01 HSI, 10 LSI, 11 LSE.
+ */
+
+/ {
+	soc {
+		stm32_lp_tick_source: lptim1: timers@40002400 {
+			compatible = "st,stm32-lptim";
+			reg = <0x40002400 0x400>;
+			clocks = <&rcc STM32_CLOCK_BUS_APB1 0x00000200>,
+				 <&rcc STM32_SRC_LSI STM32_CLOCK(2, 3, 30, 0x94)>;
+			interrupts = <97 1>;
+			interrupt-names = "wakeup";
+			status = "okay";
+		};
+	};
+};
+
+&usart3 {
+	/* ST-LINK VCP, 9600 baud => ~1.04 ms per character (8N1) */
+	current-speed = <9600>;
+};
+
+/*
+ * CONFIG_PM=y (required by the LPTIM driver) would let idle enter STOP, where
+ * USART3 cannot receive and DWT stops. Keep the CPU in plain WFI.
+ */
+&cpu0 {
+	/delete-property/ cpu-power-states;
+};

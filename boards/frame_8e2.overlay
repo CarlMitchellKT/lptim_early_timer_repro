@@ -1,0 +1,9 @@
+/* Optional: 12-bit frames (start + 8 data + even parity + 2 stop) at 9600 baud
+ * -> 1.25 ms per character (40 LPTIM counts) instead of 1.04 ms (33.3 counts).
+ * Use with: west build ... -DEXTRA_DTC_OVERLAY_FILE=boards/frame_8e2.overlay
+ * and test_lptim_early_timer.py --frame 8E2
+ */
+&usart3 {
+	parity = "even";
+	stop-bits = "2";
+};

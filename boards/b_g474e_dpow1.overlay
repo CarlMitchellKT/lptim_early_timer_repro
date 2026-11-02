@@ -1,0 +1,14 @@
+/* 9600 8N1 -> 10 bits/char = 1.0417 ms per character, i.e. an RX ISR roughly
+ * every 1.03 ms while the host streams a burst.
+ */
+&usart3 {
+	current-speed = <9600>;
+};
+
+/* CONFIG_PM=y is required to build the LPTIM system timer driver, but it would
+ * also let the idle thread enter STOP0/STOP1, where USART3 cannot receive.
+ * Drop the power states so the CPU only idles in WFI (clocks keep running).
+ */
+&cpu0 {
+	/delete-property/ cpu-power-states;
+};
